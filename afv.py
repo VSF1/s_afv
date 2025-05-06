@@ -11,7 +11,6 @@ from PIL import Image
 import numpy as np
 import rawpy
 
-
 def norm(val):
      ret = float(val)
      ret = ret/1000
@@ -21,10 +20,8 @@ def norm(val):
      ret = str(ret)
      return ret
 
-
 class draw (object) :
-
-     def handle_close(evt):
+     def handle_close(evt,a):
           fig.close()
 
      def ofile (self, event):
@@ -43,17 +40,14 @@ class draw (object) :
                        flist.append(os.path.dirname(F)+'/'+file)
                flist.sort()
                pos = flist.index(F)
-
-
                return
+
           for file in os.listdir(os.path.dirname(F)):
                if file.endswith((".jpg",".JPG",'.arw','.ARW')):
-
                   flist.append(os.path.dirname(F)+'/'+file)
           flist.sort()
           #flist.sort(key=len)
           pos = flist.index(F)
-
           self.start(F)
 
      def save (self, event):
@@ -66,7 +60,6 @@ class draw (object) :
           fig.savefig(sname, dpi=(fig.dpi*(xpixels/wi)), bbox_inches=extent,pad_inches=0,transparent=True,frameon=False,format='jpg')
           subprocess.call(['exiftool','-tagsFromFile',F,sname,'-overwrite_original_in_place'],shell=True)
 
-
      def prevf (self,event):
           global flist,F,pos
           if 'pos' in globals():
@@ -77,7 +70,6 @@ class draw (object) :
                self.start(F)
           else :
                return
-
 
      def nextf (self,event):
           global flist,F,pos
@@ -97,7 +89,6 @@ class draw (object) :
                y_c = ypixels/2
                bbox = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
                width, height = bbox.width, bbox.height
-
                width *= fig.dpi
                height *= fig.dpi
                plt.axis([x_c-width/2,x_c+width/2,y_c+height/2,y_c-height/2])
@@ -108,11 +99,9 @@ class draw (object) :
                fig.canvas.draw()
                z_status = 0
 
-
      def start (self,F) :
           global xpixels,ypixels, z_status
           z_status = 0
-
           plt.sca(ax)
           plt.cla()
           ax.axis('off')
@@ -127,19 +116,19 @@ class draw (object) :
                f = Image.open(F)
                im = np.array(f, dtype=np.uint8)
                f.close()
-          ypixels, xpixels, bands = im.shape
 
+          ypixels, xpixels, bands = im.shape
           # F is the path to your target image file.
           exifdata = subprocess.check_output(['exiftool','-a',F],shell=True,universal_newlines=True,stdin=subprocess.PIPE,stderr=subprocess.PIPE)
           exifdata = exifdata.splitlines()
           list(exifdata)
           exif = dict()
 
-
           for i,each in enumerate(exifdata):
-            # tags and values are separated by a colon
-            tag,val = each.split(':',1) # '1' only allows one split
-            exif[tag.strip()] = val.strip()
+        # tags and values are separated by a colon
+            if ':' in each:
+              tag,val = each.split(':',1) # '1' only allows one split
+              exif[tag.strip()] = val.strip()
 
 
 #### IF RAW opened, crop image to proper aspect ratio and resolution according to EXIF (i.e. quick fix of Distortion correction data)
@@ -1107,7 +1096,7 @@ class draw (object) :
 
 
 
-                    elif exif.get('Camera Model Name') in ('ILCE-6300','ILCE-6500','ILCA-99M2','ILCA-77M2','ILCE-9','DSC-RX10M4','DSC-RX100M5','ILCE-7RM3','ILCE-7M3','DSC-RX100M6','ILCE-6400','ILCE-6600','ILCE-6100','DSC-RX0', 'DSC-RX0M2', 'MODEL-NAME', 'DSC-RX100M7', 'ILCE-7RM4', 'ILCE-9M2','ZV-1','ZV-E10','ILCE-1') :
+                    elif exif.get('Camera Model Name') in ('ILCE-6300','ILCE-6500','ILCA-99M2','ILCA-77M2','ILCE-9','DSC-RX10M4','DSC-RX100M5','ILCE-7RM3','ILCE-7M3','DSC-RX100M6','ILCE-6400','ILCE-6600','ILCE-6100','DSC-RX0', 'DSC-RX0M2', 'MODEL-NAME', 'DSC-RX100M7', 'ILCE-7RM4', 'ILCE-7RM4A', 'ILCE-9M2','ZV-1','ZV-E10','ILCE-1') :
                          foc = exif.get ('Focal Plane AF Points Used')
                          if int(foc) :
 
@@ -1142,7 +1131,7 @@ class draw (object) :
             #print('Debug ' + focusp)
             focusp = list(focusp.split())
             focusp = list(map(float, focusp))
-            if exif.get('AF Area Mode') == 'Tracking' and exif.get('AF Tracking') == 'Lock On AF' and exif.get('Camera Model Name') in ('ILCE-6400','ILCE-6100','ILCE-6600','ILCE-9','ILCE-7RM4','ILCE-RX100M7', "ILCE-9M2",'ZV-1','ZV-E10','ILCE-1'):
+            if exif.get('AF Area Mode') == 'Tracking' and exif.get('AF Tracking') == 'Lock On AF' and exif.get('Camera Model Name') in ('ILCE-6400','ILCE-6100','ILCE-6600','ILCE-9','ILCE-7RM4', 'ILCE-7RM4A', 'ILCE-RX100M7', 'ILCE-9M2','ZV-1','ZV-E10','ILCE-1'):
                 ax.add_patch(patches.Rectangle((focusp[2]-0.02*xpixels,focusp[3]-0.02*xpixels),0.04*xpixels,0.04*xpixels, linewidth=1,edgecolor='lime',facecolor='none'))
                 ax.add_patch(patches.Rectangle((focusp[2]-0.025*xpixels,focusp[3]-0.025*xpixels),0.05*xpixels,0.05*xpixels, linewidth=1,edgecolor='lime',facecolor='none', linestyle='--'))
             elif exif.get('AF Tracking') == 'Face tracking':
@@ -1173,7 +1162,7 @@ class draw (object) :
                          txt = ax.text(0.01*xpixels,0.01*ypixels,str(os.path.basename(F))+' ('+str(pos+1)+'/'+str(len(flist))+')\n'+'Model with Focal Plane AF Points detected ('+str(exif.get('Camera Model Name'))+'). Focus Mode: '+str(exif.get('Focus Mode'))+'\nFocal Plane AF points used = '+str(len(foc)), color='y', weight='bold', fontsize='small', ha='left', va='top')
                          txt.set_path_effects([path_effects.Stroke(linewidth=2, foreground='black'), path_effects.Normal()])
 
-               if exif.get('Camera Model Name') in ('ILCE-6300','ILCE-6500','ILCA-99M2','ILCA-77M2','ILCE-9','DSC-RX10M4','DSC-RX100M5','ILCE-7RM3','ILCE-7M3','DSC-RX100M6','ILCE-6400', 'ILCE-6100','ILCE-6600', 'DSC-RX0', 'DSC-RX0M2', 'MODEL-NAME', 'DSC-RX100M7', 'ILCE-7RM4', "ILCE-9M2",'ZV-1','ZV-E10','ILCE-1') :
+               if exif.get('Camera Model Name') in ('ILCE-6300','ILCE-6500','ILCA-99M2','ILCA-77M2','ILCE-9','DSC-RX10M4','DSC-RX100M5','ILCE-7RM3','ILCE-7M3','DSC-RX100M6','ILCE-6400', 'ILCE-6100','ILCE-6600', 'DSC-RX0', 'DSC-RX0M2', 'MODEL-NAME', 'DSC-RX100M7', 'ILCE-7RM4', 'ILCE-7RM4A', 'ILCE-9M2','ZV-1','ZV-E10','ILCE-1') :
 
                     if exif.get('AF Area Mode') == 'Tracking' and exif.get('AF Tracking') == 'Lock On AF': #and exif.get('Camera Model Name') in ('ILCE-6400','ILCE-9','ILCE-7RM4','ILCE-RX100M7'):
                         txt = ax.text(0.01*xpixels,0.01*ypixels,str(os.path.basename(F))+' ('+str(pos+1)+'/'+str(len(flist))+')\n'+'Model with Focal Plane AF Points detected ('+str(exif.get('Camera Model Name'))+'). Focus Mode: '+str(exif.get('Focus Mode'))+'\nFocal Plane AF points used = '+str(foc)+'\n'+'Real time object tracking used', color='y', weight='bold', fontsize='small', ha='left', va='top')
@@ -1209,12 +1198,7 @@ class draw (object) :
                     txt.set_path_effects([path_effects.Stroke(linewidth=2, foreground='black'), path_effects.Normal()])
 
           ax.imshow(im)
-
           plt.draw()
-
-
-
-
 
 # Create figure and axes
 callback = draw()
@@ -1249,7 +1233,5 @@ zoom = Button(zbutton, '1:1/Fit')
 zoom.on_clicked(callback.zoom)
 
 fig.canvas.mpl_connect('close_event', callback.handle_close)
-
-
 
 plt.show()

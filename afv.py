@@ -33,7 +33,7 @@ class draw (object) :
           if 'F' in globals ():
                oldf = F
 
-          F = tkFileDialog.askopenfilename(filetypes=[('JPG or RAW from Sony Camera', ('*.jpg','*.arw'))])
+          F = tkFileDialog.askopenfilename(filetypes=[('JPG or RAW from Sony Camera', ('*.jpg','*.arw','*.jpeg'))])
           if not F :
                if 'oldf' not in globals():
                     return
@@ -116,7 +116,7 @@ class draw (object) :
           plt.sca(ax)
           plt.cla()
           ax.axis('off')
-          fig.canvas.set_window_title(os.path.basename(F))
+          fig.canvas.manager.set_window_title(os.path.basename(F))
           if '.arw' in F.lower():
                rw = open(F,'rb')
                raw = rawpy.imread(rw)
@@ -130,7 +130,7 @@ class draw (object) :
           ypixels, xpixels, bands = im.shape
 
           # F is the path to your target image file.
-          exifdata = subprocess.check_output(['exiftool.exe','-a',F],shell=True,universal_newlines=True,stdin=subprocess.PIPE,stderr=subprocess.PIPE)
+          exifdata = subprocess.check_output(['exiftool','-a',F],shell=True,universal_newlines=True,stdin=subprocess.PIPE,stderr=subprocess.PIPE)
           exifdata = exifdata.splitlines()
           list(exifdata)
           exif = dict()
@@ -144,7 +144,7 @@ class draw (object) :
 
 #### IF RAW opened, crop image to proper aspect ratio and resolution according to EXIF (i.e. quick fix of Distortion correction data)
           if exif.get('Full Image Size'):
-               fimsize = re.findall('\d+', exif.get('Full Image Size'))
+               fimsize = re.findall('\\d+', exif.get('Full Image Size'))
                if int(fimsize[1]) < ypixels or int(fimsize[0]) < xpixels :
                     #debug print ("Crop needed! EXIF Height = ",int(exif.get('Sony Image Height')),", ypixels = ",ypixels)
                     xdiff =  int(fimsize[0])
@@ -169,7 +169,7 @@ class draw (object) :
                if exif.get('AF Type') in ('15-point'):
                     for key in sorted(exif.items()) :
                       if key[0].startswith('AF Status'):
-                           vl = re.findall('\d+',key[1])
+                           vl = re.findall('\\d+',key[1])
                            if not vl:
                                 vl.append('32768')
                            if key[0] == 'AF Status Center Horizontal' :
@@ -358,7 +358,7 @@ class draw (object) :
                          rad = 0.03*xpixels/1.5
                     for key in sorted(exif.items()) :
                       if key[0].startswith('AF Status'):
-                           vl = re.findall('\d+',key[1])
+                           vl = re.findall('\\d+',key[1])
                            if not vl:
                                 vl.append('32768')
                            if key[0] == 'AF Status Center Horizontal' :
@@ -1222,7 +1222,7 @@ fig = plt.figure()
 
 ax = plt.subplot()
 
-fig.canvas.set_window_title('AF Visualizer')
+fig.canvas.manager.set_window_title('AF Visualizer')
 fig.subplots_adjust(left=0.02, bottom=0.08, right=0.98, top=0.98)
 ax.axis('off')
 ax.text (0.5,0.5,'Open file with OPEN... button', color='gray', weight='bold', fontsize='x-large', ha='center', va='center')

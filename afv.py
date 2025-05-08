@@ -122,16 +122,20 @@ class draw (object) :
           # F is the path to your target image file.
           with exiftool.ExifToolHelper() as et:
                exifdata = et.get_metadata(F)
-          exifdata = subprocess.check_output(['exiftool','-a',F],shell=True,universal_newlines=True,stdin=subprocess.PIPE,stderr=subprocess.PIPE)
-          exifdata = exifdata.splitlines()
-          list(exifdata)
+          # exifdata = subprocess.check_output(['exiftool','-a',F],shell=True,universal_newlines=True,stdin=subprocess.PIPE,stderr=subprocess.PIPE)
+          # exifdata = exifdata.splitlines()
+          # list(exifdata)
           exif = dict()
-
-          for i,each in enumerate(exifdata):
+          exifdata = exifdata.pop(0);
+        
+          for i, each in enumerate(exifdata):
         # tags and values are separated by a colon
             if ':' in each:
-              tag,val = each.split(':',1) # '1' only allows one split
-              exif[tag.strip()] = val.strip()
+              taggrp,tag = each.split(':',1) # '1' only allows one split
+            else:
+              tag = each
+            val = exifdata[each]
+            exif[tag.strip()] = val.strip()
 
 #### IF RAW opened, crop image to proper aspect ratio and resolution according to EXIF (i.e. quick fix of Distortion correction data)
           if exif.get('MakerNotes:FullImageSize'):

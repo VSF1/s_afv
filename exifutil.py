@@ -296,6 +296,19 @@ mn_aftracking = {0: "Off", 1: "Face tracking", 2: "Lock On AF"}
 mn_afstatus = {0: "Not Used", 1: "Used", 2: "Failed", 3: "In Focus"}
 mn_afareadmode_slt = {0: "Wide", 4: "Local", 8: "Zone", 9: "Spot"}
 
+mn_afpointselected = {
+    0: 'n/a',
+    1: 'Top Left Zone',
+    2: 'Top Zone',
+    3: 'Top Right Zone',
+    4: 'Left Zone',
+    5: 'Center Zone',
+    6: 'Right Zone',
+    7: 'Bottom Left Zone',
+    8: 'Bottom Zone',
+    9: 'Bottom Right Zone'
+}
+
 def make_exif(exifdata):
     exif = dict()
     for i, tag in enumerate(exifdata):
@@ -322,6 +335,16 @@ def make_exif(exifdata):
                 value = mn_afpointinfocus19[value]
             elif 'MakerNotes:AFType' in exif and exif['MakerNotes:AFType'] == '79-point':
                 value = mn_afpointinfocus79[value]
+        elif "MakerNotes:AFPointSelected" == tag:
+            if 'MakerNotes:AreaModeSetting' in exif and exif['MakerNotes:AreaModeSetting'] == 'Zone':
+                if 'MakerNotes:AFType' in exif and exif['MakerNotes:AFType'] == '15-point':
+                    value = mn_afpointinfocus15[value]
+                elif 'MakerNotes:AFType' in exif and exif['MakerNotes:AFType'] == '19-point':
+                    value = mn_afpointinfocus19[value]
+                elif exif['EXIF:Model'] == 'ILCA-99M2':
+                    value = mn_afpointinfocus79[value]
+            else:
+                value = mn_afpointselected[value]
         elif "MakerNotes:AFPointsUsed" == tag:
             afp_used = (value).split(' ')
             pt = []

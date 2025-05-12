@@ -1,41 +1,42 @@
 from devices.device import afRect
 from devices.device import afPointUsed
 from devices.device import afPointInFocus
+from devices.device import afPointSelected
 from devices.device import afPointPos
 from devices.sonyDevice import sonyDevice
 
 _pointPositions = {
 # CENTER AF POINTS
     # 7th group
-    'E6': [-0.5,    0, -0.5,   0],
+    'E6': [-0.5,    0, -0.5,   0], 'E6 Center': [-0.5,    0, -0.5,   0], 'E6 Center Vertical': [-0.5,    0, -0.5,   0], 'E6 Center F2.8': [-0.5,    0, -0.5,   0],
     'D6': [-0.5,    0, -0.5,  -1],
     'F6': [-0.5,    0, -0.5,   1],
-    'C6': [-0.5,    0, -0.5,  -2],
-    'G6': [-0.5,    0, -0.5,   2],
+    'C6': [-0.5,    0, -0.5,  -2], 'C6 Vertical': [-0.5,    0, -0.5,  -2],
+    'G6': [-0.5,    0, -0.5,   2], 'G6 Vertical': [-0.5,    0, -0.5,   2],
     'B6': [-0.5,    0, -0.5,  -3],
     'H6': [-0.5,    0, -0.5,   3],
-    'A6': [-0.5,    0, -0.5,  -4],
-    'I6': [-0.5,    0, -0.5,   4],
+    'A6': [-0.5,    0, -0.5,  -4], 'A6 Vertical': [-0.5,    0, -0.5,  -4],
+    'I6': [-0.5,    0, -0.5,   4], 'I6 Vertical': [-0.5,    0, -0.5,   4],
     # 5th group
-    'E5': [-0.5,   -1, -0.5,   0],
+    'E5': [-0.5,   -1, -0.5,   0], 'E5 Vertical': [-0.5,   -1, -0.5,   0],
     'D5': [-0.5,   -1, -0.5,  -1],
     'F5': [-0.5,   -1, -0.5,   1],
-    'C5': [-0.5,   -1, -0.5,  -2],
-    'G5': [-0.5,   -1, -0.5,   2],
+    'C5': [-0.5,   -1, -0.5,  -2], 'C5 Vertical': [-0.5,   -1, -0.5,  -2],
+    'G5': [-0.5,   -1, -0.5,   2], 'G5 Vertical': [-0.5,   -1, -0.5,   2],
     'B5': [-0.5,   -1, -0.5,  -3],
     'H5': [-0.5,   -1, -0.5,   3],
-    'A5': [-0.5,   -1, -0.5,  -4],
-    'I5': [-0.5,   -1, -0.5,   4],
+    'A5': [-0.5,   -1, -0.5,  -4], 'A5 Vertical': [-0.5,   -1, -0.5,  -4],
+    'I5': [-0.5,   -1, -0.5,   4], 'I5 Vertical': [-0.5,   -1, -0.5,   4],
     # 7th group
-    'E7': [-0.5,    1, -0.5,   0],
+    'E7': [-0.5,    1, -0.5,   0], 'E7 Vertical': [-0.5,    1, -0.5,   0],
     'D7': [-0.5,    1, -0.5,  -1],
     'F7': [-0.5,    1, -0.5,   1],
-    'C7': [-0.5,    1, -0.5,  -2],
-    'G7': [-0.5,    1, -0.5,   2],
+    'C7': [-0.5,    1, -0.5,  -2], 'C7 Vertical': [-0.5,    1, -0.5,  -2],
+    'G7': [-0.5,    1, -0.5,   2], 'G7 Vertical': [-0.5,    1, -0.5,   2],
     'B7': [-0.5,    1, -0.5,  -3],
     'H7': [-0.5,    1, -0.5,   3],
-    'A7': [-0.5,    1, -0.5,  -4],
-    'I7': [-0.5,    1, -0.5,   4],
+    'A7': [-0.5,    1, -0.5,  -4], 'A7 Vertical': [-0.5,    1, -0.5,  -4],
+    'I7': [-0.5,    1, -0.5,   4], 'I7 Vertical': [-0.5,    1, -0.5,   4],
 # LEFT PART
     # 4th group
     'E4': [-0.5, -2.8, -0.5,   0],
@@ -108,9 +109,40 @@ class sonyDevice79PDAF(sonyDevice):
         self.facesFound = self.getFaces()
         self.focusPointsUsed = self.getAFPointsUsed()
         self.focusPointsInFocus = self.getAFPointsInFocus()
-        self.allPoints = self.focusPoints + self.facesFound + self.focusPointsUsed + self.focusPointsInFocus
+        self.focusPointSelected = self.getAFPointSelected() 
+        self.allPoints = self.focusPoints + self.facesFound + self.focusPointsUsed + self.focusPointsInFocus 
+        self.allPoints = self.allPoints + self.focusPointSelected
 
+    def getAFPointSelected(self):
+        """
+        Return the AF point selected, None if it is not found
+        """
+        if 'MakerNotes:AFPointSelected' in self.metaData:
+            if self.metaData.get('EXIF:Model') in ('ILCA-77M2','ILCA-68'):
+                return [] 
+            elif self.metaData.get('EXIF:Model') in ('ILCA-99M2') and 'MakerNotes:AFPointSelected' in self.metaData:
+                xp = self.x_c
+                yp = self.y_c
+                rs = self.r_size
+                vspacer = self.vspacer
+                hspacer = self.hspacer
+                pt = self.metaData.get('MakerNotes:AFPointSelected')
+                if pt in _pointPositions:
+                    pointSelected = afPointSelected(
+                        x=xp+_pointPositions[pt][0]*rs+_pointPositions[pt][1]*hspacer,
+                        y=yp+_pointPositions[pt][2]*rs+_pointPositions[pt][3]*vspacer, w=rs)
+                    return [pointSelected] 
+                else:
+                    print("No AF point selected for ",self.metaData.get('EXIF:Model'))
+                    return [] 
+            else:
+                print("No AF point selected for ",self.metaData.get('EXIF:Model'))
+                return [] 
+        else:
+            return [] 
     def getAFPointsUsed(self):
+        if 'MakerNotes:AFPointsUsed' not in self.metaData:
+            return [] 
         pointsRet = []
         if self.metaData.get('EXIF:Model') in ('ILCA-77M2','ILCA-99M2'):
             afp_used = (self.metaData.get('MakerNotes:AFPointsUsed')).split(', ')
@@ -130,10 +162,27 @@ class sonyDevice79PDAF(sonyDevice):
         return pointsRet
 
     def getAFPointsInFocus(self):
+        if 'MakerNotes:AFPointInFocus' not in self.metaData:
+            return [] 
         if 'MakerNotes:AFType' in self.metaData and self.metaData.get('MakerNotes:AFType') in ('79-point'):
-            return []
+            if self.metaData.get('EXIF:Model') in ('ILCA-77M2','ILCA-68'):
+                return [] 
+            elif self.metaData.get('EXIF:Model') in ('ILCA-99M2'):
+                xp = self.x_c
+                yp = self.y_c
+                rs = self.r_size
+                vspacer = self.vspacer
+                hspacer = self.hspacer
+                pt = self.metaData.get('MakerNotes:AFPointInFocus')
+                pointSelected = afPointInFocus(
+                    x=xp+_pointPositions[pt][0]*rs+_pointPositions[pt][1]*hspacer + rs/2,
+                    y=yp+_pointPositions[pt][2]*rs+_pointPositions[pt][3]*vspacer + rs/2, rad=(0.01*self.xpixels))
+                return [pointSelected] 
+            else:
+                print("No AF point selected for ",self.metaData.get('EXIF:Model'))
+                return [] 
         else:
-            return []
+            return [] 
 
     def getAFPoints(self):
         if self.metaData.get('MakerNotes:AFType') not in ('79-point'):

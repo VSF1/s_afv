@@ -10,13 +10,15 @@ from devices.sonyDevice19PDAF import sonyDevice19PDAF
 from devices.sonyDevice15PDAF import sonyDevice15PDAF
  
 def sonyDeviceFactory(metaData, im):
-    if metaData.get('MakerNotes:AFType') in ('79-point'):
-        return sonyDevice79PDAF(metaData, im)
-    elif metaData.get('MakerNotes:AFType') in ('19-point'):
-        return sonyDevice19PDAF(metaData, im)
-    if metaData.get('MakerNotes:AFType') in ('15-point'):
-        return sonyDevice15PDAF(metaData, im)
-    return sonyDevice(metaData, im)
+    if 'MakerNotes:AFType' in metaData:
+        if metaData.get('MakerNotes:AFType') in ('79-point'):
+            return sonyDevice79PDAF(metaData, im)
+        elif metaData.get('MakerNotes:AFType') in ('19-point'):
+            return sonyDevice19PDAF(metaData, im)
+        if metaData.get('MakerNotes:AFType') in ('15-point'):
+            return sonyDevice15PDAF(metaData, im)
+    else:
+        return sonyDevice(metaData, im)
 
 class sonyDevice(baseDevice):
     def __init__ (self, metaData, im):

@@ -119,6 +119,22 @@ class afPointInFocus(afPoint) :
     #end def
 #end class
 
+class afPointSelected(afPoint) :
+    def __init__ (self, x, y, rad, name=None) :
+        afPoint.__init__(self, x, y, name)
+        self.rad = rad
+    #end def
+
+    def render (self, ax):
+        ax.add_patch(patches.Circle((self.x,self.y), self.rad, linewidth=2,edgecolor = 'y',facecolor='none',alpha =0.9))
+        if self.name:
+            txt = ax.text(self.x, self.y, self.name, color='w', weight='bold', fontsize='small', ha='center',
+                va='center')
+            txt.set_path_effects([path_effects.Stroke(linewidth=2, foreground='black'), path_effects.Normal()])
+        #end if
+    #end def
+#end class
+
 class afFace (afRect) :
     def __init__ (self, x, y, w, h, name):
         afRect.__init__(self, x, y, w, h, name)
@@ -144,7 +160,8 @@ class baseDevice(object):
     def render (self, ax) :
         if self.allPoints:
             for point in self.allPoints:
-                point.render(ax)
+                if point is not None:
+                    point.render(ax)
             #end for
         #end if
     #end def

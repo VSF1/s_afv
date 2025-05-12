@@ -15,6 +15,12 @@ class sonyDevice19PDAF(sonyDevice):
         self.focusPointsInFocus = self.getAFPointsInFocus()
         self.allPoints = self.focusPoints + self.facesFound + self.focusPointsUsed + self.focusPointsInFocus
 
+    def getAFPointSelected(self):
+        if 'EXIF:Model' in self.metaData:
+            if self.metaData.get('Exif:Model') in ('SLT-A99'):
+                return None
+        return None
+
     def getAFPointsUsed(self):
         if 'MakerNotes:AFType' in self.metaData       and self.metaData.get('MakerNotes:AFType') in ('19-point'):
             return []

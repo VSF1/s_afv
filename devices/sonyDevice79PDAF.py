@@ -109,9 +109,13 @@ class sonyDevice79PDAF(sonyDevice):
         self.facesFound = self.getFaces()
         self.focusPointsUsed = self.getAFPointsUsed()
         self.focusPointsInFocus = self.getAFPointsInFocus()
-        self.focusPointSelected = self.getAFPointSelected() 
+        self.focusPointSelected = self.getAFPointSelected()
+        self.focusLocation = self.getFocusLocation() 
         self.allPoints = self.focusPoints + self.facesFound + self.focusPointsUsed + self.focusPointsInFocus 
-        self.allPoints = self.allPoints + self.focusPointSelected
+        self.allPoints = self.allPoints + self.focusPointSelected + self.focusLocation
+
+    def getFocusLocation(self):
+        return super().getFocusLocation()
 
     def getAFPointSelected(self):
         """
@@ -185,10 +189,10 @@ class sonyDevice79PDAF(sonyDevice):
             return [] 
 
     def getAFPoints(self):
-        if self.metaData.get('MakerNotes:AFType') not in ('79-point'):
-            return []
-
         pointsRet = []
+        if self.metaData.get('MakerNotes:AFType') not in ('79-point'):
+            return pointsRet
+
         if self.metaData.get('EXIF:Model') in ('ILCA-77M2','ILCA-99M2'):
             afp_used = (self.metaData.get('MakerNotes:AFPointsUsed')).split(', ')
             xp = self.x_c

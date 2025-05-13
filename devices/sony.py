@@ -4,10 +4,13 @@ from devices.device import afRect
 from devices.device import afPointUsed
 from devices.device import afPointInFocus
 from devices.device import afPointPos
+from devices.device import afFocusLocation
+from devices.device import afFocusLocationFaceTracking
 from devices.device import afFace
 from devices.sonyDevice79PDAF import sonyDevice79PDAF
 from devices.sonyDevice19PDAF import sonyDevice19PDAF
 from devices.sonyDevice15PDAF import sonyDevice15PDAF
+from devices.sonyDevicePDAF import sonyDevicePDAF
  
 def sonyDeviceFactory(metaData, im):
     if 'MakerNotes:AFType' in metaData:
@@ -18,52 +21,37 @@ def sonyDeviceFactory(metaData, im):
         if metaData.get('MakerNotes:AFType') in ('15-point'):
             return sonyDevice15PDAF(metaData, im)
     else:
-        return sonyDevice(metaData, im)
+        if metaData.get('EXIF:Model') in ('DSLR-A900', 'DSLR-A700', 'DSLR-A850'):
+            return sonyDevicePDAF(metaData, im)
+        else:
+            return sonyDevice(metaData, im)
 
 class sonyDevice(baseDevice):
     def __init__ (self, metaData, im):
         self.cameraMake = metaData['EXIF:Make']
         self.cameraModel = metaData['EXIF:Model']
         self.metaData = metaData
-        self.__scaleUpdate(im)
-        self.focusPoints = self.__getAFPoints()
-        self.faces = self.__getFaces()
-        self.focusPointsUsed = self.__getAFPointsUsed()
-        self.focusPointsInFocus = self.__getAFPointsInFocus()
-        self.allPoints = self.focusPoints + self.faces + self.focusPointsUsed + self.focusPointsInFocus
+        self.scaleUpdate(im)
+        self.focusPoints = self.getAFPoints()
+        self.facesFound = self.getFaces()
+        self.focusPointsUsed = self.getAFPointsUsed()
+        self.focusPointsInFocus = self.getAFPointsInFocus()
+        self.focusLocation = self.getFocusLocation() 
+        self.focusPointSelected = self.getAFPointSelected()
+        self.allPoints = self.focusPoints + self.facesFound + self.focusPointsUsed + self.focusPointsInFocus 
+        self.allPoints = self.allPoints + self.focusPointSelected + self.focusLocation
 
-    def __getAFPoints(self):
-        if 'MakerNotes:AFType' in self.metaData:
-            if self.metaData.get('MakerNotes:AFType') in ('15-point'):
-                return self.__getAFPoints15()
-            elif self.metaData.get('MakerNotes:AFType') in ('19-point'):
-                return []
-            elif self.metaData.get('MakerNotes:AFType') in ('79-point'):
-                return self.__getAFPoints79()
-        else:
-            return []
+    def getAFPoints(self):
+        return []
     
-    def __getAFPointsUsed(self):
-        if 'MakerNotes:AFType' in self.metaData:
-            if self.metaData.get('MakerNotes:AFType') in ('15-point'):
-                return self.__getAFPointsUsed15()
-            elif self.metaData.get('MakerNotes:AFType') in ('19-point'):
-                return []
-            elif self.metaData.get('MakerNotes:AFType') in ('79-point'):
-                return []
-        else:
-            return []
+    def getAFPointSelected(self):
+        return []
+    
+    def getAFPointsUsed(self):
+        return []
 
-    def __getAFPointsInFocus(self):
-        if 'MakerNotes:AFType' in self.metaData:
-            if self.metaData.get('MakerNotes:AFType') in ('15-point'):
-                return self.__getAFPointsInFocus15()
-            elif self.metaData.get('MakerNotes:AFType') in ('19-point'):
-                return []
-            elif self.metaData.get('MakerNotes:AFType') in ('79-point'):
-                return []
-        else:
-            return []
+    def getAFPointsInFocus(self):
+        return []
 
     def __getAFPoints15(self):
         if self.metaData.get('MakerNotes:AFType') not in ('15-point'):
@@ -148,149 +136,6 @@ class sonyDevice(baseDevice):
         return pointsRet
     #end def
 
-    def __getAFPoints79(self):
-        if self.metaData.get('MakerNotes:AFType') not in ('79-point'):
-            return []
-        pointsRet = []
-        if self.metaData.get('EXIF:Model') in ('ILCA-77M2','ILCA-99M2'):
-            afp_used = (self.metaData.get('MakerNotes:AFPointsUsed')).split(', ')
-            xp = self.x_c # x center
-            yp = self.y_c
-            rs = self.r_size
-            vspacer = self.vspacer
-            hspacer = self.hspacer
-            # CENTER AF POINTS
-            if 'E6' not in afp_used:
-                afp = afPointPos(x=xp-rs/2, y=yp-rs/2, w=rs)
-                pointsRet.append(afp)
-            if 'D6' not in afp_used:
-                afp = afPointPos(x=xp-rs/2, y=yp-rs/2-vspacer, w=rs)
-                pointsRet.append(afp)
-            if 'F6' not in afp_used:
-                afp = afPointPos(x=xp-rs/2, y=yp-rs/2+vspacer, w=rs)
-                pointsRet.append(afp)
-            if 'C6' not in afp_used:
-                afp = afPointPos(x=xp-rs/2, y=yp-rs/2+vspacer*2, w=rs)
-                pointsRet.append(afp)
-            #G6
-            '''
-            if 'G6' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2,y_c+2*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2,y_c+2*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #B6
-            if 'B6' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2,y_c-3*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2,y_c-3*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #H6
-            if 'H6' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2,y_c+3*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2,y_c+3*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #A6
-            if 'A6' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2,y_c-4*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-             else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2,y_c-4*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #I6
-            if 'I6' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2,y_c+4*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2,y_c+4*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #E5
-            if 'E5' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #D5
-            if 'D5' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c-vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c-vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #F5
-            if 'F5' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c+vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c+vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #C5
-            if 'C5' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c-2*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c-2*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #G5
-            if 'G5' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c+2*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c+2*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #B5
-            if 'B5' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c-3*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c-3*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #H5
-            if 'H5' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c+3*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c+3*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #A5
-            if 'A5' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c-4*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c-4*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #I5
-            if 'I5' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c+4*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2-hspacer,y_c+4*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #E7
-            if 'E7' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #D7
-            if 'D7' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c-vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c-vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #F7
-            if 'F7' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c+vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c+vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #C7
-            if 'C7' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c-2*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c-2*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #G7
-            if 'G7' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c+2*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c+2*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #B7
-            if 'B7' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c-3*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c-3*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #H7
-            if 'H7' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c+3*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c+3*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #A7
-            if 'A7' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c-4*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c-4*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            #I7
-            if 'I7' in afp_used:
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c+4*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'limegreen',facecolor='none',alpha =0.9))
-            else :
-                ax.add_patch(patches.Rectangle((x_c-r_size/2+hspacer,y_c+4*vspacer-r_size/2),r_size,r_size,linewidth=2,edgecolor = 'w',facecolor='none',alpha =0.3))
-            '''
-        return pointsRet
-    #end def
     def __getAFPointsInFocus15(self):
         pointsRet = []
         if 'MakerNotes:AFPointInFocus' in self.metaData:
@@ -378,7 +223,7 @@ class sonyDevice(baseDevice):
         return pointsRet
     #end def
 
-    def __getFaces(self):
+    def getFaces(self):
         lfaces = []
         if 'MakerNotes:FacesDetected' in self.metaData:
             facesCount = self.metaData.get('MakerNotes:FacesDetected')
@@ -398,7 +243,25 @@ class sonyDevice(baseDevice):
         return lfaces
     #end def
 
-    def __scaleUpdate(self, im):
+    def getFocusLocation(self):
+        pointRet = []
+        if 'MakerNotes:FocusLocation' in self.metaData:
+            focusp = self.metaData.get('MakerNotes:FocusLocation')
+            focusp = list(focusp.split())
+            focusp = list(map(float, focusp))
+            if self.metaData.get('MakerNotes:AFAreaMode') == 'Tracking' and self.metaData.get('MakerNotes:AFTracking') == 'Lock On AF' and self.metaData.get('EXIF:Model') in ('ILCE-6400','ILCE-6100','ILCE-6600','ILCE-9','ILCE-7RM4', 'ILCE-7RM4A', 'ILCE-RX100M7', 'ILCE-9M2','ZV-1','ZV-E10','ILCE-1'):
+                pointRet = [
+                    afPointUsed(x=focusp[2]- 0.01*self.xpixels, y=focusp[3]- 0.02*self.xpixels, w=0.04*self.xpixels),
+                    afPointUsed(x=focusp[2]-0.025*self.xpixels, y=focusp[3]-0.025*self.xpixels, w=0.05*self.xpixels)
+                ]
+            elif self.metaData.get('MakerNotes:AFTracking') == 'Face tracking':
+                pointRet = [afFocusLocationFaceTracking(x=focusp[2],y=focusp[3], rad=(0.01*self.xpixels))]
+            else:
+                pointRet = [afFocusLocation(x=focusp[2],y=focusp[3], rad=(0.01*self.xpixels))]
+            #endif
+        return pointRet
+
+    def scaleUpdate(self, im):
         self.ypixels, self.xpixels, bands = im.shape
         if self.metaData.get('MakerNotes:FullImageSize'):
             fimsize = re.findall('\\d+', self.metaData.get('MakerNotes:FullImageSize'))
@@ -418,17 +281,5 @@ class sonyDevice(baseDevice):
             self.y_c = self.ypixels/2
             self.spacer = 0.047*self.xpixels
             self.rad = 0.03*self.xpixels
-        if self.metaData.get('EXIF:Model') == 'ILCA-99M2':
-            self.r_size = 0.020*self.xpixels
-            self.vspacer = 1.2*self.r_size
-            self.hspacer = 2.2*self.r_size
-        elif self.metaData.get('EXIF:Model') in ('ILCA-77M2'):
-            self.r_size = 0.020*self.xpixels*1.5
-            self.vspacer = 1.2*self.r_size
-            self.hspacer = 2.2*self.r_size
-        elif self.metaData.get('EXIF:Model') in ('SLT-A99','SLT-A99V'):
-            self.r_size = 0.039*self.xpixels/1.5
-            self.spacer = 0.047*self.xpixels/1.5
-            self.rad = 0.03*self.xpixels/1.5
         #endif
     #end def

@@ -195,7 +195,7 @@ mn_afpointsused79 = {
     8:{0: "G9",  1: "G10", 2: "G11", 3: "H2",  4: "H3",  5: "H4",  6: "H5",  7: "H6"}, 
     9:{0: "H7",  1: "H8",  2: "H9",  3: "H10", 4: "I5",  5: "I6",  6: "I7",  8: "(none)"}, 
 }
-mn_afpoint = {
+mn_afpointselected_ILCA_99M2 = {
     0: "Auto",
     93: "A5",
     94: "A6",
@@ -294,7 +294,11 @@ mn_afareamode = {
 }
 mn_aftracking = {0: "Off", 1: "Face tracking", 2: "Lock On AF"}
 mn_afstatus = {0: "Not Used", 1: "Used", 2: "Failed", 3: "In Focus"}
-mn_afareadmode_slt = {0: "Wide", 4: "Local", 8: "Zone", 9: "Spot"}
+mn_afareamodesetting = {
+    "SLT":  {0: "Wide", 4: "Local", 8: "Zone", 9: "Spot"},
+    "ILCE": {0: "Wide", 1: "Center", 3: "Flexible Spot", 4: "Flexible Spot (LA-EA4)", 9: "Center (LA-EA4)", 11: "Zone", 12: "Expalded Flexible Spot", 13: "Custom Area"},
+    "ILCA": {0: "Wide", 4: "Flexible Spot", 8: "Zone", 9: "Center", 12: "Expanded Flexible Spot"}
+}
 
 mn_afpointselected = {
     0: 'n/a',
@@ -311,19 +315,36 @@ mn_afpointselected = {
 
 def make_exif(exifdata):
     exif = dict()
+    
+    if 'MakerNotes:AFAreaMode' in exifdata:
+        value = exifdata['MakerNotes:AFAreaMode']
+        value = mn_afareamode[value]
+        exifdata['MakerNotes:AFAreaMode'] = value
+
+    if 'MakerNotes:AFAreaModeSetting' in exifdata:
+        value = exifdata['MakerNotes:AFAreaModeSetting']
+        if exifdata['EXIF:Model'].startswith('ILCA'):
+            value = mn_afareamodesetting['ILCA'][value]
+        elif exifdata['EXIF:Model'].startswith('NEX') or exifdata['EXIF:Model'].startswith('ILCE'):
+            value = mn_afareamodesetting['ILCE'][value]
+        elif exifdata['EXIF:Model'].startswith('SLT'):
+            value = mn_afareamodesetting['SLT'][value]
+        exifdata['MakerNotes:AFAreaModeSetting'] = value
+    
+    if 'MakerNotes:AFType' in exifdata:
+        value = exifdata['MakerNotes:AFType']
+        value = mn_aftype[value]
+        exifdata['MakerNotes:AFType'] = value
+
     for i, tag in enumerate(exifdata):
         value = exifdata[tag]
-        if 'MakerNotes:AFType' == tag:
-            value = mn_aftype[value]
-        elif 'MakerNotes:FocusMode' == tag:
+        if 'MakerNotes:FocusMode' == tag:
             if exif['EXIF:Model'] in ('DSLR-A900', 'DSLR-A700', 'DSLR-A850'):
                 value = mn_focusmode_a900[value]
             elif exif['EXIF:Model'] in ('NEX-5', 'NEX-C3', 'NEX-VG10E', 'DSLR-A33', 'DSLR-A35'):
                 value = mn_focusmode_nex[value]
             else:
                 value = mn_focusmode[value]
-        elif 'MakerNotes:AFAreaMode' == tag:
-            value = mn_afareamode[value]
         elif 'MakerNotes:AFTracking' == tag:
             value = mn_aftracking[value]
         elif 'MakerNotes:AFStatus' == tag:
@@ -336,13 +357,13 @@ def make_exif(exifdata):
             elif 'MakerNotes:AFType' in exif and exif['MakerNotes:AFType'] == '79-point':
                 value = mn_afpointinfocus79[value]
         elif "MakerNotes:AFPointSelected" == tag:
-            if 'MakerNotes:AreaModeSetting' in exif and exif['MakerNotes:AreaModeSetting'] == 'Zone':
+            if 'MakerNotes:AFAreaModeSetting' in exif and exif['MakerNotes:AFAreaModeSetting'] == 'Zone':
                 if 'MakerNotes:AFType' in exif and exif['MakerNotes:AFType'] == '15-point':
                     value = mn_afpointinfocus15[value]
                 elif 'MakerNotes:AFType' in exif and exif['MakerNotes:AFType'] == '19-point':
                     value = mn_afpointinfocus19[value]
                 elif exif['EXIF:Model'] == 'ILCA-99M2':
-                    value = mn_afpointinfocus79[value]
+                    value = mn_afpointselected_ILCA_99M2[value]
             else:
                 value = mn_afpointselected[value]
         elif "MakerNotes:AFPointsUsed" == tag:

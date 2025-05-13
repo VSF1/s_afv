@@ -1,6 +1,9 @@
 import re
 from devices.device import baseDevice
 from devices.device import afFace
+from devices.device import afPointUsed
+from devices.device import afFocusLocation
+from devices.device import afFocusLocationFaceTracking
 
 class sonyDevice(baseDevice):
     def __init__ (self, metaData, im):
@@ -38,6 +41,24 @@ class sonyDevice(baseDevice):
             self.rad = 0.03*self.xpixels
         #endif
     #end def
+
+    def getFocusLocation(self):
+        pointRet = []
+        if 'MakerNotes:FocusLocation' in self.metaData:
+            focusp = self.metaData.get('MakerNotes:FocusLocation')
+            focusp = list(focusp.split())
+            focusp = list(map(float, focusp))
+            if self.metaData.get('MakerNotes:AFAreaMode') == 'Tracking' and self.metaData.get('MakerNotes:AFTracking') == 'Lock On AF' and self.metaData.get('EXIF:Model') in ('ILCE-6400','ILCE-6100','ILCE-6600','ILCE-9','ILCE-7RM4', 'ILCE-7RM4A', 'ILCE-RX100M7', 'ILCE-9M2','ZV-1','ZV-E10','ILCE-1'):
+                pointRet = [
+                    afPointUsed(x=focusp[2]- 0.01*self.xpixels, y=focusp[3]- 0.02*self.xpixels, w=0.04*self.xpixels),
+                    afPointUsed(x=focusp[2]-0.025*self.xpixels, y=focusp[3]-0.025*self.xpixels, w=0.05*self.xpixels)
+                ]
+            elif self.metaData.get('MakerNotes:AFTracking') == 'Face tracking':
+                pointRet = [afFocusLocationFaceTracking(x=focusp[2],y=focusp[3], rad=(0.01*self.xpixels))]
+            else:
+                pointRet = [afFocusLocation(x=focusp[2],y=focusp[3], rad=(0.01*self.xpixels))]
+            #endif
+        return pointRet
 
     def getFaces(self):
         lfaces = []

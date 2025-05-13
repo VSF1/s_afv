@@ -93,7 +93,7 @@ class afPointUsed(afRect) :
     #end def
 
     def render (self, ax) :
-        ax.add_patch(patches.Rectangle((self.x, self.y), self.w, self.h, linewidth = 2, edgecolor = "red",
+        ax.add_patch(patches.Rectangle((self.x, self.y), self.w, self.h, linewidth = 2, edgecolor = "limegreen",
             facecolor = 'none', alpha = 0.9))
         if self.name:
             txt = ax.text(self.x_center, self.y_center, self.name, color = 'w', weight = 'bold', fontsize = 'small',
@@ -104,13 +104,47 @@ class afPointUsed(afRect) :
 #end class
 
 class afPointInFocus(afPoint) :
+    def __init__ (self, x, y, rad, name=None, linewidth=2, edgecolor='yellow') :
+        afPoint.__init__(self, x, y, name)
+        self.rad = rad
+        self.linewidth = linewidth
+        self.edgecolor = edgecolor
+    #end def
+
+    def render (self, ax):
+        ax.add_patch(patches.Circle((self.x,self.y), self.rad, linewidth=self.linewidth,edgecolor = self.edgecolor,facecolor='none',alpha =0.9))
+        if self.name:
+            txt = ax.text(self.x, self.y, self.name, color='w', weight='bold', fontsize='small', ha='center',
+                va='center')
+            txt.set_path_effects([path_effects.Stroke(linewidth=2, foreground='black'), path_effects.Normal()])
+        #end if
+    #end def
+#end class
+
+class afFocusLocation(afPoint) :
     def __init__ (self, x, y, rad, name=None) :
         afPoint.__init__(self, x, y, name)
         self.rad = rad
     #end def
 
     def render (self, ax):
-        ax.add_patch(patches.Circle((self.x,self.y), self.rad, linewidth=2,edgecolor = 'y',facecolor='none',alpha =0.9))
+        ax.add_patch(patches.Circle((self.x,self.y), self.rad, linewidth=1, edgecolor = 'yellow', facecolor='none', alpha =0.9))
+        if self.name:
+            txt = ax.text(self.x, self.y, self.name, color='w', weight='bold', fontsize='small', ha='center',
+                va='center')
+            txt.set_path_effects([path_effects.Stroke(linewidth=2, foreground='black'), path_effects.Normal()])
+        #end if
+    #end def
+#end class
+
+class afFocusLocationFaceTracking(afPoint) :
+    def __init__ (self, x, y, rad, name=None) :
+        afPoint.__init__(self, x, y, name)
+        self.rad = rad
+    #end def
+
+    def render (self, ax):
+        ax.add_patch(patches.Circle((self.x,self.y), self.rad, linewidth=1,edgecolor='lime',facecolor='none',alpha =0.9))
         if self.name:
             txt = ax.text(self.x, self.y, self.name, color='w', weight='bold', fontsize='small', ha='center',
                 va='center')
@@ -126,7 +160,7 @@ class afPointSelected(afPoint) :
     #end def
 
     def render (self, ax):
-        ax.add_patch(patches.Circle((self.x,self.y), self.rad, linewidth=2,edgecolor = 'y',facecolor='none',alpha =0.9))
+        ax.add_patch(patches.Circle((self.x,self.y), self.rad, linewidth=2,edgecolor = 'green',facecolor='none',alpha =0.9))
         if self.name:
             txt = ax.text(self.x, self.y, self.name, color='w', weight='bold', fontsize='small', ha='center',
                 va='center')

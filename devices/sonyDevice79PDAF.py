@@ -137,7 +137,7 @@ class sonyDevice79PDAF(sonyDevice):
                         y=yp+_pointPositions[pt][2]*rs+_pointPositions[pt][3]*vspacer, w=rs)
                     return [pointSelected] 
                 else:
-                    print("No AF point selected for ",self.metaData.get('EXIF:Model'))
+                    print("No AF point selected for ", self.metaData.get('EXIF:Model'))
                     return [] 
             else:
                 print("No AF point selected for ",self.metaData.get('EXIF:Model'))

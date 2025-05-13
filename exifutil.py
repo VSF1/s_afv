@@ -195,88 +195,27 @@ mn_afpointsused79 = {
     8:{0: "G9",  1: "G10", 2: "G11", 3: "H2",  4: "H3",  5: "H4",  6: "H5",  7: "H6"}, 
     9:{0: "H7",  1: "H8",  2: "H9",  3: "H10", 4: "I5",  5: "I6",  6: "I7",  8: "(none)"}, 
 }
-mn_afpointselected_ILCA_99M2 = {
-    0: "Auto",
-    93: "A5",
-    94: "A6",
-    95: "A7",
-    106: "B2", 
-    107: "B3", 
-    108: "B4", 
-    110: "B5", 
-    111: "B6", 
-    112: "B7", 
-    114: "B8", 
-    115: "B9",
-    116: "B10", 
-    122: "C1",
-    123: "C2",
-    124: "C3",
-    125: "C4",
-    127: "C5",
-    128: "C6",
-    129: "C7",
-    131: "C8",
-    132: "C9",
-    133: "C10",
-    134: "C11",
-    139: "D1",
-    140: "D2",
-    141: "D3",
-    142: "D4",
-    144: "D5",
-    145: "D6",
-    146: "D7",
-    148: "D8",
-    149: "D9",
-    150: "D10",
-    151: "D11",
-    156: "E1",
-    157: "E2",
-    158: "E3",
-    159: "E4",
-    161: "E5",
-    162: "E6",
-    163: "E7",
-    165: "E8",
-    166: "E9",
-    167: "E10",
-    168: "E11",
-    173: "F1",
-    174: "F2",
-    175: "F3",
-    176: "F4",
-    178: "F5",
-    179: "F6",
-    180: "F7",
-    182: "F8",
-    183: "F9",
-    184: "F10",
-    185: "F11",
-    190: "G1", 
-    191: "G2",
-    192: "G3",
-    193: "G4",
-    195: "G5",
-    196: "G6",
-    197: "G7",
-    199: "G8",
-    200: "G9",
-    201: "G10",
-    202: "G11",
-    208: "H2",
-    209: "H3",
-    210: "H4",
-    212: "H5",
-    213: "H6",
-    214: "H7",
-    216: "H8",
-    217: "H9",
-    218: "H10",
-    229: "I5",
-    230: "I6",
-    231: "I7" 
+mn_afpointselected = {
+    'ILCA-99M2': { # when is not Zone
+        0: "Auto",  93: "A5",  94: "A6",   95: "A7",  106: "B2",  107: "B3",  108: "B4",  110: "B5",  111: "B6", 112: "B7",
+        114: "B8", 115: "B9", 116: "B10", 122: "C1",  123: "C2",  124: "C3",  125: "C4",  127: "C5",  128: "C6", 129: "C7",
+        131: "C8", 132: "C9", 133: "C10", 134: "C11", 139: "D1",  140: "D2",  141: "D3",  142: "D4",  144: "D5", 145: "D6",
+        146: "D7", 148: "D8", 149: "D9",  150: "D10", 151: "D11", 156: "E1",  157: "E2",  158: "E3",  159: "E4", 161: "E5",
+        162: "E6", 163: "E7", 165: "E8",  166: "E9",  167: "E10", 168: "E11", 173: "F1",  174: "F2",  175: "F3", 176: "F4",
+        178: "F5", 179: "F6", 180: "F7",  182: "F8",  183: "F9",  184: "F10", 185: "F11", 190: "G1",  191: "G2", 192: "G3",
+        193: "G4", 195: "G5", 196: "G6",  197: "G7",  199: "G8",  200: "G9",  201: "G10", 202: "G11", 208: "H2", 209: "H3",
+        210: "H4", 212: "H5", 213: "H6",  214: "H7",  216: "H8",  217: "H9",  218: "H10", 229: "I5",  230: "I6", 231: "I7" 
+    },
+    'ILCA': {
+        0: "n/a", 1: "Top Left Zone", 2: "Top Zone", 3: "Top Right Zone", 4: "Left Zone", 5: "Center Zone",
+        6: "Right Zone", 7: "Bottom Left Zone", 8: "Bottom Zone", 9: "Bottom Right Zone"
+    },
+    'ILCE': { # and NEX
+        0: "n/a", 1: "Center Zone", 2: "Top Zone", 3: "Right Zone", 4: "Left Zone", 5: "Bottom Zone",
+        6: "Bottom Right Zone", 7: "Bottom Left Zone", 8: "Top Left Zone", 9: "Top Right Zone"
+    } 
 }
+
 mn_afareamode = {
     0: "Multi",
     1: "Center",
@@ -298,19 +237,6 @@ mn_afareamodesetting = {
     "SLT":  {0: "Wide", 4: "Local", 8: "Zone", 9: "Spot"},
     "ILCE": {0: "Wide", 1: "Center", 3: "Flexible Spot", 4: "Flexible Spot (LA-EA4)", 9: "Center (LA-EA4)", 11: "Zone", 12: "Expalded Flexible Spot", 13: "Custom Area"},
     "ILCA": {0: "Wide", 4: "Flexible Spot", 8: "Zone", 9: "Center", 12: "Expanded Flexible Spot"}
-}
-
-mn_afpointselected = {
-    0: 'n/a',
-    1: 'Top Left Zone',
-    2: 'Top Zone',
-    3: 'Top Right Zone',
-    4: 'Left Zone',
-    5: 'Center Zone',
-    6: 'Right Zone',
-    7: 'Bottom Left Zone',
-    8: 'Bottom Zone',
-    9: 'Bottom Right Zone'
 }
 
 def make_exif(exifdata):
@@ -363,9 +289,12 @@ def make_exif(exifdata):
                 elif 'MakerNotes:AFType' in exif and exif['MakerNotes:AFType'] == '19-point':
                     value = mn_afpointinfocus19[value]
                 elif exif['EXIF:Model'] == 'ILCA-99M2':
-                    value = mn_afpointselected_ILCA_99M2[value]
+                    value = mn_afpointselected['ILCA'][value]
             else:
-                value = mn_afpointselected[value]
+                if exif['EXIF:Model'] == 'ILCA-99M2':
+                    value = mn_afpointselected['ILCA-99M2'][value]
+                else:
+                    value = mn_afpointselected['ILCE'][value]
         elif "MakerNotes:AFPointsUsed" == tag:
             afp_used = (value).split(' ')
             pt = []

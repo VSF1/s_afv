@@ -191,6 +191,9 @@ class baseDevice(object):
         self.allPoints = None
     #end def
 
+    def facesDetected(self):
+        return False
+
     def render (self, ax) :
         if self.allPoints:
             for point in self.allPoints:
